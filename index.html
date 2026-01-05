@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mapa de Materiales</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{font-family:Arial;background:#111;color:#fff;padding:20px}
+input{width:100%;padding:14px;font-size:18px}
+.card{background:#1e1e1e;padding:15px;margin-top:10px;border-radius:8px}
+.badge{display:inline-block;padding:4px 8px;background:#333;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h2>📦 Buscar material</h2>
+<input id="q" placeholder="Ej: LC01, LF12, 01" oninput="buscar()">
+<div id="res"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+db.enablePersistence().catch(()=>{});
+
+async function buscar(){
+  const q=document.getElementById("q").value.toUpperCase().trim();
+  const res=document.getElementById("res");
+  res.innerHTML="";
+  if(!q) return;
+
+  const snap=await db.collection("materiales")
+    .where("lc_lf",">=",q)
+    .where("lc_lf","<=",q+"\uf8ff")
+    .get();
+
+  if(snap.empty){
+    res.innerHTML="<p>No encontrado</p>";
+    return;
+  }
+
+  snap.forEach(d=>{
+    const m=d.data();
+    res.innerHTML+=`
+      <div class="card">
+        <div class="badge">${m.lc_lf}</div><br><br>
+        📍 <b>${m.ubicacion}</b><br>
+        🎨 ${m.color}<br>
+        🏷 ${m.codigo}
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
